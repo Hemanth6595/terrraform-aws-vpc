@@ -18,6 +18,6 @@ locals {
     var.igw_tags
    )
    
-  aws_availability_zones_names=slice(aws_availability_zones.available,0,3)
+  aws_availability_zones_names=slice(data.aws_availability_zones.available,0,3)
 
 }
