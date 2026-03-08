@@ -22,7 +22,7 @@ resource "aws_subnet" "public" {
     local.common_tags,{
       #roboshop-dev-public-us-east-1a
       #roboshop-dev-public-us-east-1b
-      Name ="${var.project}-${var.environment}-public-${local.aws_availability_zones_names[count.index]}"
+      Name ="${var.project}-${var.environment}-public-subnet-${local.aws_availability_zones_names[count.index]}"
     } ,
     var.public_subnet_tags
   )
@@ -39,7 +39,7 @@ resource "aws_subnet" "private" {
     local.common_tags,{
       #roboshop-dev-public-us-east-1a
       #roboshop-dev-public-us-east-1b
-      Name ="${var.project}-${var.environment}-private-${local.aws_availability_zones_names[count.index]}"
+      Name ="${var.project}-${var.environment}-private-subnet-${local.aws_availability_zones_names[count.index]}"
     } ,
     var.private_subnet_tags
   )
@@ -56,8 +56,45 @@ resource "aws_subnet" "database" {
     local.common_tags,{
       #roboshop-dev-public-us-east-1a
       #roboshop-dev-public-us-east-1b
-      Name ="${var.project}-${var.environment}-database-${local.aws_availability_zones_names[count.index]}"
+      Name ="${var.project}-${var.environment}-database-subnet-${local.aws_availability_zones_names[count.index]}"
     } ,
     var.database_subnet_tags
+  )
+}
+
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+  tags = merge(
+    local.common_tags,{
+      #roboshop-dev-public
+      #roboshop-dev-public
+      Name ="${var.project}-${var.environment}-public"
+    } ,
+    var.public_route_table_tags
+  )
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+  tags = merge(
+    local.common_tags,{
+      #roboshop-dev-public
+      #roboshop-dev-public
+      Name ="${var.project}-${var.environment}-private"
+    } ,
+    var.private_route_table_tags
+  )
+}
+
+resource "aws_route_table" "database" {
+  vpc_id = aws_vpc.main.id
+  tags = merge(
+    local.common_tags,{
+      #roboshop-dev-public
+      #roboshop-dev-public
+      Name ="${var.project}-${var.environment}-database"
+    } ,
+    var.database_route_table_tags
   )
 }
