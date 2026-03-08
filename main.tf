@@ -68,7 +68,6 @@ resource "aws_route_table" "public" {
   tags = merge(
     local.common_tags,{
       #roboshop-dev-public
-      #roboshop-dev-public
       Name ="${var.project}-${var.environment}-public"
     } ,
     var.public_route_table_tags
@@ -79,8 +78,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
   tags = merge(
     local.common_tags,{
-      #roboshop-dev-public
-      #roboshop-dev-public
+      #roboshop-dev-private
       Name ="${var.project}-${var.environment}-private"
     } ,
     var.private_route_table_tags
@@ -91,10 +89,59 @@ resource "aws_route_table" "database" {
   vpc_id = aws_vpc.main.id
   tags = merge(
     local.common_tags,{
-      #roboshop-dev-public
-      #roboshop-dev-public
+      #roboshop-dev-database
       Name ="${var.project}-${var.environment}-database"
     } ,
     var.database_route_table_tags
   )
+}
+
+resource "aws_route" "public" {
+  route_table_id              = aws_route_table.public.id
+  destination_ipv6_cidr_block = "0.0.0.0/0"
+  gateway_id      = aws_internet_gateway.main.id
+}
+
+
+resource "aws_eip" "nat_gateway" {
+  domain  = "vpc"
+ tags = merge(
+    local.common_tags,{
+      #roboshop-dev-public
+      #roboshop-dev-nat
+      Name ="${var.project}-${var.environment}-nat"
+    } ,
+    var.eip_tags
+  )
+}
+
+
+
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat_gateway.id
+  subnet_id     = aws_subnet.public[0].id # We are creating nat-gate-way in us-eat-1a
+
+  tags = merge(
+    local.common_tags,{
+      #roboshop-dev
+      Name ="${var.project}-${var.environment}"
+    } ,
+    var.eip_tags
+  )
+  # To ensure proper ordering, it is recommended to add an explicit dependency
+  # on the Internet Gateway for the VPC.
+  depends_on = [aws_internet_gateway.main]
+}
+
+
+resource "aws_route" "private" {
+  route_table_id              = aws_route_table.private.id
+  destination_ipv6_cidr_block = "0.0.0.0/0"
+  nat_gateway_id      = aws_nat_gateway.main.id
+
+}
+resource "aws_route" "database" {
+  route_table_id              = aws_route_table.database.id
+  destination_ipv6_cidr_block = "0.0.0.0/0"
+  nat_gateway_id      = aws_nat_gateway.main.id
 }
