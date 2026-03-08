@@ -17,13 +17,7 @@ locals {
     } ,
     var.igw_tags
    )
-
-   public_subnets_final_tags= merge(
-    local.common_tags,{
-      Name ="${var.project}-${var.environment}"
-    } ,
-    var.igw_tags
-   )
    
+  aws_availability_zones_names=slice(aws_availability_zones.available,0,3)
 
 }
